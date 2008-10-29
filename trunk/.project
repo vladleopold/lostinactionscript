@@ -20,5 +20,10 @@
 			<type>1</type>
 			<location>/Applications/Adobe Flash CS3/Configuration/ActionScript 3.0/Classes/playerglobal.swc</location>
 		</link>
+		<link>
+			<name>CS3Components</name>
+			<type>2</type>
+			<location>/Applications/Adobe Flash CS3/Configuration/Component Source/ActionScript 3.0/User Interface</location>
+		</link>
 	</linkedResources>
 </projectDescription>
