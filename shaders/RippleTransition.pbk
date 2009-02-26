@@ -92,9 +92,9 @@ kernel RippleTransition
         float2 newUV1 = center + normToUV * (centerDistance + offset1);
         float2 newUV2 = center + normToUV * (centerDistance + offset2);
 
-        float4 c1 = sampleLinear(src1, newUV1*rect); 
-        float4 c2 = sampleLinear(src2, newUV2*rect);
+        float4 center1 = sampleLinear(src1, newUV1*rect); 
+        float4 center2 = sampleLinear(src2, newUV2*rect);
 
-        dst = mix(c1, c2, progress);
+        dst = mix(center1, center2, progress);
     }
 }
