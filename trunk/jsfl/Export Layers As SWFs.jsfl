@@ -47,7 +47,7 @@ var lyr;
 var originalType;
 var i;
 
-var saveDir = fl.browseForFolderURL("Choose a folder in which to save your exported SWFs:");
+var saveDir = fl.browseForFolderURL("Select a folder to save exported SWFs:");
 if (saveDir) {
 	fl.outputPanel.clear();
 	
