@@ -44,7 +44,7 @@ kernel BlendModeSoftlight
 <   namespace : "Tweensy";
     vendor : "Lost In Actionscript - Shane McCartney";
     version : 1;
-    description : "Allows for applying the softlight blend mode";
+    description : "This is a softer version of Overlay. Applying pure black or white does not result in pure black or white.";
 >
 {
     input image4 src1;
@@ -53,6 +53,11 @@ kernel BlendModeSoftlight
     parameter float alpha
     <defaultValue:float(1.0);>;
     
+    parameter float multiply
+    <defaultValue:float(1.0);
+    minValue:float(1.0);
+    maxValue:float(10.0);>;
+    
     output pixel4 dst;
 
     void
@@ -60,15 +65,25 @@ kernel BlendModeSoftlight
     {
        float2 uv = outCoord();
        
-        float4 src01 = sampleLinear(src1, uv);
-        float4 src02 = sampleLinear(src2, uv);
+        float4 src1Rgba = sampleLinear(src1, uv);
         
-        float4 temp = float4(0.0,0.0,0.0,1.0);
+        float4 src2Rgba = sampleLinear(src2, uv);
+        if(src2Rgba.a == 0.0) src2Rgba.rgb = float3(0.0, 0.0, 0.0);
         
-        temp.r = 2.0*(src01.r*src02.r) + src01.r*src01.r - 2.0*(pow(src01.r,2.0)*src02.r);
-        temp.g = 2.0*(src01.g*src02.g) + src01.g*src01.g - 2.0*(pow(src01.g,2.0)*src02.g);
-        temp.b = 2.0*(src01.b*src02.b) + src01.b*src01.b - 2.0*(pow(src01.b,2.0)*src02.b);
+        float src1Alpha = alpha*src1Rgba.a;
+        float src2Alpha = src2Rgba.a;
 
-        dst = mix(temp, src01, 1.0-alpha);
+       	float4 rgba;
+
+        if(src2Rgba.a == 0.0){
+        	rgba = src1Rgba;
+        } else {
+            rgba.r = 2.0*(src1Rgba.r*src2Rgba.r) + src1Rgba.r*src1Rgba.r - 2.0*(pow(src1Rgba.r,2.0)*src2Rgba.r);
+            rgba.g = 2.0*(src1Rgba.g*src2Rgba.g) + src1Rgba.g*src1Rgba.g - 2.0*(pow(src1Rgba.g,2.0)*src2Rgba.g);
+            rgba.b = 2.0*(src1Rgba.b*src2Rgba.b) + src1Rgba.b*src1Rgba.b - 2.0*(pow(src1Rgba.b,2.0)*src2Rgba.b);
+        }
+
+        dst = mix(src2Rgba, rgba, src1Alpha);
+        dst.a = src1Alpha+src2Alpha;
     }
 }
