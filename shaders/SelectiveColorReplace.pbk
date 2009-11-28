@@ -1,0 +1,134 @@
+/*	
+.__       _____   ____    ______      ______   __  __     
+/\ \     /\  __`\/\  _`\ /\__  _\    /\__  _\ /\ \/\ \    
+\ \ \    \ \ \/\ \ \,\L\_\/_/\ \/    \/_/\ \/ \ \ `\\ \   
+.\ \ \  __\ \ \ \ \/_\__ \  \ \ \       \ \ \  \ \ , ` \  
+..\ \ \L\ \\ \ \_\ \/\ \L\ \ \ \ \       \_\ \__\ \ \`\ \ 
+...\ \____/ \ \_____\ `\____\ \ \_\      /\_____\\ \_\ \_\
+....\/___/   \/_____/\/_____/  \/_/      \/_____/ \/_/\/_/
+	                                                          
+	                                                          
+.______  ____    ______  ______   _____   __  __  ____    ____     ____    ______   ____    ______   
+/\  _  \/\  _`\ /\__  _\/\__  _\ /\  __`\/\ \/\ \/\  _`\ /\  _`\  /\  _`\ /\__  _\ /\  _`\ /\__  _\  
+\ \ \L\ \ \ \/\_\/_/\ \/\/_/\ \/ \ \ \/\ \ \ `\\ \ \,\L\_\ \ \/\_\\ \ \L\ \/_/\ \/ \ \ \L\ \/_/\ \/  
+.\ \  __ \ \ \/_/_ \ \ \   \ \ \  \ \ \ \ \ \ , ` \/_\__ \\ \ \/_/_\ \ ,  /  \ \ \  \ \ ,__/  \ \ \  
+..\ \ \/\ \ \ \L\ \ \ \ \   \_\ \__\ \ \_\ \ \ \`\ \/\ \L\ \ \ \L\ \\ \ \\ \  \_\ \__\ \ \/    \ \ \ 
+...\ \_\ \_\ \____/  \ \_\  /\_____\\ \_____\ \_\ \_\ `\____\ \____/ \ \_\ \_\/\_____\\ \_\     \ \_\
+....\/_/\/_/\/___/    \/_/  \/_____/ \/_____/\/_/\/_/\/_____/\/___/   \/_/\/ /\/_____/ \/_/      \/_/
+
+    
+Copyright (c) 2009 Lost In Actionscript - Shane McCartney
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+*/
+
+<languageVersion : 1.0;>
+
+kernel SelectiveColorReplace
+<   namespace : "FlashDynamix";
+    vendor : "FlashDynamix";
+    version : 1;
+    description : "Selective colour replacer";
+>
+{
+    input image4 src;
+    
+    parameter float3 sampleRgb
+    <minValue:float3(0.0, 0.0, 0.0);
+    defaultValue:float3(185.0, 128.0, 121.0);
+    maxValue:float3(255.0, 255.0, 255.0);>;
+    
+    parameter float3 replaceRgb
+    <minValue:float3(0.0, 0.0, 0.0);
+    defaultValue:float3(196.0, 86.0, 20.0);
+    maxValue:float3(255.0, 255.0, 255.0);>;
+    
+    parameter float fuziness
+    <minValue:float(0.0);
+    defaultValue:float(35.0);
+    maxValue:float(255.0);>;
+    
+    parameter float contrast
+    <minValue:float(0.0);
+    defaultValue:float(0.0);
+    maxValue:float(10.0);>;
+
+    parameter float brightness
+    <minValue:float(0.0);
+    defaultValue:float(0.0);
+    maxValue:float(1.0);>;
+    
+    // mode 0 is the replacement rgba and the original rgba.
+    // mode 1 is the replacement rgba area.
+    // mode 2 is only the replacement rgba.
+    
+    parameter int mode
+    <minValue:int(0.0);
+    defaultValue:int(0.0);
+    maxValue:int(2.0);>;
+    
+    output pixel4 dst;
+
+    void
+    evaluatePixel()
+    {
+        float4 currentRgba = sampleNearest(src,outCoord());
+        
+        // Get the difference from the sample RGB and the current RGB
+        // Then divide by the fuziness to calculate the closeness to the sample
+        // The make sure the range is absolute
+        float3 differenceRgb = (sampleRgb/255.0)-currentRgba.rgb;
+        differenceRgb /= (fuziness/255.0);
+        differenceRgb = abs(differenceRgb);
+        
+        // Inverse the difference
+        float3 rangeRgb = float3(1.0, 1.0, 1.0) - differenceRgb;
+        
+        // Find the total of the closeness of the RGB values to the sample RGB
+        // Then find the average and clamp between 0 and 1 to find a closeness ratio
+        float rangeTotal = rangeRgb.r+rangeRgb.g+rangeRgb.b;
+        float rangeAverage = rangeTotal/3.0;
+        float closeness = clamp(rangeAverage, 0.0, 1.0);
+        
+        // Interpolate the closeness with the replacement RGB to figure the overlay RGB
+        float3 originalRgb = currentRgba.rgb*(1.0-closeness);
+        float3 overlayRgb = (replaceRgb/255.0)*closeness;
+        
+        float3 resultRgb = originalRgb + overlayRgb;
+        
+        if(mode == 0){
+        	dst.rgb = resultRgb;
+        	dst.a = 1.0;
+        } else if(mode == 1){
+        	dst.rgb = float3(closeness, closeness, closeness);
+        	dst.a = 1.0;
+        } else {
+            dst.rgb = (replaceRgb.rgb/255.0)*closeness;
+        	dst.a = closeness;
+        }
+        
+          // Apply the contrast
+        dst.rgb = ((dst.rgb - 0.5) * max(contrast+1.0, 0.0)) + 0.5;
+        // Apply the brightness
+        dst.rgb = dst.rgb + brightness;
+        
+       
+    }
+}
