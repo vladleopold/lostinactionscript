@@ -24,7 +24,7 @@ package com.lia.documents {
 			
 			encryptButton.setStyle("textFormat", buttonTextFormat);			decryptButton.setStyle("textFormat", buttonTextFormat);
 			
-			keyInputTextField.text = "Shhh don't tell any one this is a secret key!";
+			keyInputTextField.text = "Shhh dont tell any one this is a secret key!";
 			encryptInputTextField.text = "The truth is out there";
 			
 			encryptButton.addEventListener(MouseEvent.MOUSE_DOWN, onEncryptMouseDown);			decryptButton.addEventListener(MouseEvent.MOUSE_DOWN, onDecryptMouseDown);
