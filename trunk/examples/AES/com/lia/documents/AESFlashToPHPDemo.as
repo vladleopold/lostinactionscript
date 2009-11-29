@@ -41,7 +41,7 @@ package com.lia.documents {
 			loadingMessage.addChild(poller);
 			
 			/////////////////////////////////////////////////////////////////////////
-			
+
 			var buttonTextFormat : TextFormat = new TextFormat("_sans", 18, 0x000000);
 			var inputTextFormat : TextFormat = new TextFormat("_sans", 14, 0x000000);
 			
@@ -52,11 +52,11 @@ package com.lia.documents {
 			encryptButton.setStyle("textFormat", buttonTextFormat);
 			decryptButton.setStyle("textFormat", buttonTextFormat);
 			
-			keyInputTextField.text = "Shhh don't tell any one this is a secret key!";
+			keyInputTextField.text = "Shhh dont tell any one this is a secret key!";
 			encryptInputTextField.text = "The truth is out there";
 			
 			/////////////////////////////////////////////////////////////////////////
-			
+
 			encryptButton.addEventListener(MouseEvent.MOUSE_DOWN, onEncryptMouseDown);
 			decryptButton.addEventListener(MouseEvent.MOUSE_DOWN, onDecryptMouseDown);
 			
@@ -66,13 +66,13 @@ package com.lia.documents {
 		private function onDecryptDataLoaded(event : Event) : void {
 			removeChild(loadingMessage);
 			
-			decryptInputTextField.text = decryptUrlLoader.data;
+			decryptInputTextField.text = decryptUrlLoader.data.substr(0, decryptUrlLoader.data.length - 1);
 		}
 
 		private function onEncryptDataLoaded(event : Event) : void {
 			removeChild(loadingMessage);
 			
-			encryptInputTextField.text = decryptInputTextField.text = encryptUrlLoader.data;
+			encryptInputTextField.text = decryptInputTextField.text =  encryptUrlLoader.data.substr(0, encryptUrlLoader.data.length - 1);
 		}
 
 		private function onDecryptMouseDown(event : MouseEvent) : void {
@@ -81,7 +81,8 @@ package com.lia.documents {
 			var decryptUrlRequest : URLRequest = new URLRequest("http://code.flashdynamix.com/AES/aes-decrypt.php");
 			
 			var decryptUrlVariables : URLVariables = new URLVariables();
-			decryptUrlVariables["encrypted"] = encryptInputTextField.text;
+			decryptUrlVariables["key"] = keyInputTextField.text;
+			decryptUrlVariables["encrypted"] = decryptInputTextField.text;
 			
 			decryptUrlRequest.data = decryptUrlVariables;
 			decryptUrlRequest.method = URLRequestMethod.POST;
@@ -95,6 +96,7 @@ package com.lia.documents {
 			var encryptUrlRequest : URLRequest = new URLRequest("http://code.flashdynamix.com/AES/aes-encrypt.php");
 			
 			var encryptUrlVariables : URLVariables = new URLVariables();
+			encryptUrlVariables["key"] = keyInputTextField.text;
 			encryptUrlVariables["plain"] = encryptInputTextField.text;
 			
 			encryptUrlRequest.data = encryptUrlVariables;
