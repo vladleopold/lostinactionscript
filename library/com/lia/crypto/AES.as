@@ -37,16 +37,16 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
-*/
+ */
 
- /*AES Counter-mode for Actionscript ported from AES Counter-mode implementation in JavaScript by Chris Veness
+/*AES Counter-mode for Actionscript ported from AES Counter-mode implementation in JavaScript by Chris Veness
  *- see http://csrc.nist.gov/public statications/nistpubs/800-38a/sp800-38a.pdf
  */
 
 package com.lia.crypto {
-	
+
 	public class AES {
-		
+
 		public static const BIT_KEY_128 : int = 128;
 		public static const BIT_KEY_192 : int = 192;
 		public static const BIT_KEY_256 : int = 256;
@@ -95,8 +95,8 @@ package com.lia.crypto {
 		public static function encrypt(plaintext : String, password : String, nBits : int) : String {
 			var blockSize : int = 16;  // block size fixed at 16 bytes / 128 bits (Nb=4) for AES
 			if (!(nBits == BIT_KEY_128 || nBits == BIT_KEY_192 || nBits == BIT_KEY_256)) {
-				  // standard allows 128/192/256 bit keys
-				  throw new Error("Must be a key mode of either 128, 192, 256 bits");
+				// standard allows 128/192/256 bit keys
+				throw new Error("Must be a key mode of either 128, 192, 256 bits");
 			}
 			plaintext = Utf8.encode(plaintext);
 			password = Utf8.encode(password);
@@ -168,8 +168,8 @@ package com.lia.crypto {
 		public static function decrypt(ciphertext : String, password : String, nBits : int) : String {
 			var blockSize : int = 16;  // block size fixed at 16 bytes / 128 bits (Nb=4) for AES
 			if (!(nBits == BIT_KEY_128 || nBits == BIT_KEY_192 || nBits == BIT_KEY_256)) {
-				  // standard allows 128/192/256 bit keys
-				  throw new Error("Must be a key mode of either 128, 192, 256 bits");
+				// standard allows 128/192/256 bit keys
+				throw new Error("Must be a key mode of either 128, 192, 256 bits");
 			}
 			ciphertext = Base64.decode(ciphertext);
 			password = Utf8.encode(password);
@@ -246,7 +246,7 @@ package com.lia.crypto {
 			state = addRoundKey(state, w, Nr, Nb);
 			
 			var output : Array = new Array(4 * Nb);  // convert state to 1-d array before returning [§3.4]
-			for (var i : int = 0;i < 4 * Nb;i++) output[i] = state[i % 4][Math.floor(i / 4)];
+			for (i = 0;i < 4 * Nb;i++) output[i] = state[i % 4][Math.floor(i / 4)];
 			
 			return output;
 		}
