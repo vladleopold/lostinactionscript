@@ -39,30 +39,36 @@ THE SOFTWARE.
 
  */
  
-var doc = fl.getDocumentDOM();
-var lyrs = doc.getTimeline().layers;
-
-var len = lyrs.length;
-var lyr;
-var originalType;
-var i;
-
-var saveDir = fl.browseForFolderURL("Select a folder to save exported SWFs:");
-if (saveDir) {
+function runScript(){
+	var doc = fl.getDocumentDOM();
+	var lyrs = doc.getTimeline().layers;
+	
+	var len = lyrs.length;
+	var lyr;
+	var originalType;
+	var i;
+	
+	var saveDir = fl.browseForFolderURL("Select a folder to save exported SWFs:");
+	
+	if (saveDir == null) {
+		fl.trace("User cancelled script.");
+		return;
+	}
+	
 	fl.outputPanel.clear();
-	
+		
 	var originalTypes = new Array();
-	
+		
 	for (i=0; i < len; i++) {
 		lyr = lyrs[i];
 		originalTypes[i] = lyr.layerType;
-	};
-	
+	}
+		
 	for (i=0; i < len; i++) {
 		lyr = lyrs[i];
 		lyr.layerType = "guide";
-	};
-	
+	}
+		
 	for (i=0; i < len; i++) {
 		lyr = lyrs[i];
 		originalType = originalTypes[i]
@@ -72,10 +78,19 @@ if (saveDir) {
 			fl.trace("Exported: " + lyr.name+".swf");
 			lyr.layerType = "guide";
 		}
-	};
-
+	}
+	
 	for (i=0; i < len; i++) {
 		lyr = lyrs[i];
 		lyr.layerType = originalTypes[i];
-	};
+	}
+	
+	alert("Exported complete!");
+}
+
+
+try {
+	runScript();
+}catch(error){
+	fl.trace(error);
 }

@@ -1,41 +1,67 @@
-﻿/**
- * Replaces text in class definitions within a FLA. When run
- * two prompts will appear to specify search and replace text.
- * Once entered, all class definitions including the document
- * class, library item classes, and library base classes will
- * be searched for the specified text and replaced with the
- * respective text using a replace regular expression. After
- * the command has completed, an alert will appear providing
- * a report of the results.
+/*	
+.__       _____   ____    ______      ______   __  __     
+/\ \     /\  __`\/\  _`\ /\__  _\    /\__  _\ /\ \/\ \    
+\ \ \    \ \ \/\ \ \,\L\_\/_/\ \/    \/_/\ \/ \ \ `\\ \   
+.\ \ \  __\ \ \ \ \/_\__ \  \ \ \       \ \ \  \ \ , ` \  
+..\ \ \L\ \\ \ \_\ \/\ \L\ \ \ \ \       \_\ \__\ \ \`\ \ 
+...\ \____/ \ \_____\ `\____\ \ \_\      /\_____\\ \_\ \_\
+....\/___/   \/_____/\/_____/  \/_/      \/_____/ \/_/\/_/
+	                                                          
+	                                                          
+.______  ____    ______  ______   _____   __  __  ____    ____     ____    ______   ____    ______   
+/\  _  \/\  _`\ /\__  _\/\__  _\ /\  __`\/\ \/\ \/\  _`\ /\  _`\  /\  _`\ /\__  _\ /\  _`\ /\__  _\  
+\ \ \L\ \ \ \/\_\/_/\ \/\/_/\ \/ \ \ \/\ \ \ `\\ \ \,\L\_\ \ \/\_\\ \ \L\ \/_/\ \/ \ \ \L\ \/_/\ \/  
+.\ \  __ \ \ \/_/_ \ \ \   \ \ \  \ \ \ \ \ \ , ` \/_\__ \\ \ \/_/_\ \ ,  /  \ \ \  \ \ ,__/  \ \ \  
+..\ \ \/\ \ \ \L\ \ \ \ \   \_\ \__\ \ \_\ \ \ \`\ \/\ \L\ \ \ \L\ \\ \ \\ \  \_\ \__\ \ \/    \ \ \ 
+...\ \_\ \_\ \____/  \ \_\  /\_____\\ \_____\ \_\ \_\ `\____\ \____/ \ \_\ \_\/\_____\\ \_\     \ \_\
+....\/_/\/_/\/___/    \/_/  \/_____/ \/_____/\/_/\/_/\/_____/\/___/   \/_/\/ /\/_____/ \/_/      \/_/
+
+    
+Copyright (c) 2009 Lost In Actionscript - Shane McCartney
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
  */
-function replaceClassText(){
-	
-	// get search and replace text from the user
-	// if the prompt is canceled, abort command
+
+function runScript(){
 	var userFindText = prompt("Library class text to find", "");
-	if (!userFindText) {
-		fl.trace("User canceled command.");
-		return;
-	}
-	var userReplaceText = prompt("Text to replace it", "");
-	if (!userReplaceText) {
-		fl.trace("User canceled command.");
+	if (userFindText == null) {
+		fl.trace("User cancelled script.");
 		return;
 	}
 	
-	// set up the regular expression that will
-	// replace the specified text (g = globally)
+	var userReplaceText = prompt("Text to replace it", "");
+	if (userReplaceText == null) {
+		fl.trace("User cancelled script.");
+		return;
+	}
+	
 	var searchReg = new RegExp(userFindText, "g");
-	var docClassReplaceCount = 0;	// report for document class replacement
-	var classReplaceCount = 0;		// report for class replacement
-	var baseReplaceCount = 0;		// report for base class replacement
+	var docClassReplaceCount = 0;
+	var classReplaceCount = 0;
+	var baseReplaceCount = 0;
 	var item, classText;
 	var dom = fl.getDocumentDOM();
 	var lib = dom.library;
 	
-	// Document class
 	classText = dom.docClass;
-	if (classText){
+	if (classText != ""){
 		dom.docClass = classText.replace(searchReg, userReplaceText);
 		
 		// if the class text changed, increment report value
@@ -44,30 +70,22 @@ function replaceClassText(){
 		}
 	}
 	
-	// Library items
 	var i = lib.items.length;
 	while (i--){
 		item = lib.items[i];
 		
-		// class name
 		classText = item.linkageClassName;
-		if (classText){
+		if (classText != ""){
 			item.linkageClassName = classText.replace(searchReg, userReplaceText);
 			
-			// if the class text changed, increment report value
 			if (classText != item.linkageClassName){
 				classReplaceCount++;
 			}
 		}
 		
-		// base class
 		classText = item.linkageBaseClass;
-		if (!classText){
+		if (classText == ""){
 			
-			// using default base class check the type to
-			// get the implied base class. this is required
-			// since the [implied] base class returns "" if
-			// not specified by the user
 			switch (item.itemType){
 				case "button":
 					classText = "flash.display.SimpleButton";
@@ -82,39 +100,28 @@ function replaceClassText(){
 					classText = "flash.media.Sound";
 					break;
 				
-				// no implied base class - a symbol
-				// that cannot have a base class
 				default:
 					classText = null;
 					break;
 			}
 		}
 		
-		// check again for class text in case implied
-		// text was set. also make sure a class name exists
-		// if you're going to change the base otherwise
-		// the setting of the base class will fail and the
-		// the command will be silently aborted by Flash
-		if (classText && item.linkageClassName){
+		if (classText != "" && item.linkageClassName !=""){
 			item.linkageBaseClass = classText.replace(searchReg, userReplaceText);
 			
-			// if the class text changed, increment report value
 			if (classText != item.linkageBaseClass){
 				baseReplaceCount++;
 			}
 		}
 	}
 	
-	// report the results
 	alert(docClassReplaceCount +" document classes replaced\n"
 		  +classReplaceCount +" library item classes replaced\n"
 		  +baseReplaceCount +" library item base classes replaced");
 }
 
-// call the method. In case there's
-// an error, trace it to the output window
 try {
-	replaceClassText();
+	runScript();
 }catch(error){
 	fl.trace(error);
 }
