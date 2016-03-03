@@ -1,0 +1,1 @@
+Code provided from the blog Lost In Actionscript http://www.lostinactionscript.com
